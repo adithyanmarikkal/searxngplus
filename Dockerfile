@@ -1,5 +1,6 @@
 FROM alpine:3.20
-ENTRYPOINT ["/sbin/tini","--","/usr/local/searxng/dockerfiles/docker-entrypoint.sh"]
+
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/searxng/dockerfiles/docker-entrypoint.sh"]
 EXPOSE 8080
 VOLUME /etc/searxng
 
@@ -20,6 +21,11 @@ ENV INSTANCE_NAME=searxng \
     UWSGI_THREADS=4
 
 WORKDIR /usr/local/searxng
+
+# Clone the forked repository
+RUN apk add --no-cache git && \
+    git clone --depth 1 https://github.com/adithyanmarikkal/searxngplus.git . && \
+    apk del git
 
 COPY requirements.txt ./requirements.txt
 
@@ -64,26 +70,27 @@ RUN su searxng -c "/usr/bin/python3 -m compileall -q searx" \
 
 # Keep these arguments at the end to prevent redundant layer rebuilds
 ARG LABEL_DATE=
-ARG GIT_URL=unknown
+ARG GIT_URL=https://github.com/adithyanmarikkal/searxngplus
 ARG SEARXNG_GIT_VERSION=unknown
 ARG SEARXNG_DOCKER_TAG=unknown
 ARG LABEL_VCS_REF=
-ARG LABEL_VCS_URL=
-LABEL maintainer="searxng <${GIT_URL}>" \
-      description="A privacy-respecting, hackable metasearch engine." \
+ARG LABEL_VCS_URL=${GIT_URL}
+
+LABEL maintainer="Adithyan Marikkal <${GIT_URL}>" \
+      description="A privacy-respecting, hackable metasearch engine (forked)." \
       version="${SEARXNG_GIT_VERSION}" \
       org.label-schema.schema-version="1.0" \
-      org.label-schema.name="searxng" \
+      org.label-schema.name="searxngplus" \
       org.label-schema.version="${SEARXNG_GIT_VERSION}" \
       org.label-schema.url="${LABEL_VCS_URL}" \
       org.label-schema.vcs-ref=${LABEL_VCS_REF} \
       org.label-schema.vcs-url=${LABEL_VCS_URL} \
       org.label-schema.build-date="${LABEL_DATE}" \
-      org.label-schema.usage="https://github.com/searxng/searxng-docker" \
-      org.opencontainers.image.title="searxng" \
+      org.label-schema.usage="https://github.com/adithyanmarikkal/searxngplus" \
+      org.opencontainers.image.title="searxngplus" \
       org.opencontainers.image.version="${SEARXNG_DOCKER_TAG}" \
       org.opencontainers.image.url="${LABEL_VCS_URL}" \
       org.opencontainers.image.revision=${LABEL_VCS_REF} \
       org.opencontainers.image.source=${LABEL_VCS_URL} \
       org.opencontainers.image.created="${LABEL_DATE}" \
-      org.opencontainers.image.documentation="https://github.com/searxng/searxng-docker"
+      org.opencontainers.image.documentation="https://github.com/adithyanmarikkal/searxngplus"
